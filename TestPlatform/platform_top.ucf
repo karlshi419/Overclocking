@@ -1,0 +1,91 @@
+#---------------------------------------------------------------
+# This is .ucf file for the FPGA on ML605 board
+#---------------------------------------------------------------
+
+#---------------------------------------------------------------
+# Timing Constraints
+#---------------------------------------------------------------
+NET "sys_clk_p" TNM_NET = "clk_ref_clk";
+TIMEGRP ref_clk =  "clk_ref_clk";
+TIMESPEC TS_ref_clk = PERIOD "ref_clk" 5 ns HIGH 50 %;
+
+NET "clkgen/clk_ref_ibufg" TNM_NET = "TNM_clk_ref";
+TIMESPEC TS_clk_ref = PERIOD "TNM_clk_ref" 5 ns;
+
+#---------------------------------------------------------------
+# I/O Standards
+#---------------------------------------------------------------
+### ML605 200 MHz LVDS oscillator - single input clock design (2.5V bank)
+NET "sys_clk_p" IOSTANDARD = LVDS_25;
+NET "sys_clk_p" LOC = J9;
+
+NET "sys_clk_n" IOSTANDARD = LVDS_25;
+NET "sys_clk_n" LOC = H9;
+
+## rst
+NET "sys_rst" LOC = G26;
+NET "sys_rst" IOSTANDARD = LVCMOS15;
+
+## LEDs
+NET "led[0]" LOC = AC22;
+NET "led[0]" IOSTANDARD = LVCMOS25;
+NET "led[0]" SLEW = SLOW;
+NET "led[1]" LOC = AC24;
+NET "led[1]" IOSTANDARD = LVCMOS25;
+NET "led[1]" SLEW = SLOW;
+NET "led[2]" LOC = AE22;
+NET "led[2]" IOSTANDARD = LVCMOS25;
+NET "led[2]" SLEW = SLOW;
+NET "led[3]" LOC = AE23;
+NET "led[3]" IOSTANDARD = LVCMOS25;
+NET "led[3]" SLEW = SLOW;
+NET "led[4]" LOC = AB23;
+NET "led[4]" IOSTANDARD = LVCMOS25;
+NET "led[4]" SLEW = SLOW;
+NET "led[5]" LOC = AG23;
+NET "led[5]" IOSTANDARD = LVCMOS25;
+NET "led[5]" SLEW = SLOW;
+NET "led[6]" LOC = AE24;
+NET "led[6]" IOSTANDARD = LVCMOS25;
+NET "led[6]" SLEW = SLOW;
+NET "led[7]" LOC = AD24;
+NET "led[7]" IOSTANDARD = LVCMOS25;
+NET "led[7]" SLEW = SLOW;
+
+#---------------------------------------------------------------
+# Area Constraints
+#---------------------------------------------------------------
+INST "control_logic" AREA_GROUP = "pblock_control";
+AREA_GROUP "pblock_control" RANGE=SLICE_X52Y83:SLICE_X55Y89;
+
+INST "design_top" AREA_GROUP = "pblock_design_top";
+AREA_GROUP "pblock_design_top" RANGE=SLICE_X40Y80:SLICE_X51Y89;
+AREA_GROUP "pblock_design_top" RANGE=RAMB18_X2Y32:RAMB18_X2Y35;
+AREA_GROUP "pblock_design_top" RANGE=RAMB36_X2Y16:RAMB36_X2Y17;
+
+INST "cs/sys_icon" AREA_GROUP = "pblock_cs_sys_icon";
+AREA_GROUP "pblock_cs_sys_icon" RANGE=SLICE_X44Y90:SLICE_X51Y99;
+AREA_GROUP "pblock_cs_sys_icon" RANGE=DSP48_X2Y36:DSP48_X2Y39;
+
+INST "cs/sys_ila" AREA_GROUP = "pblock_cs_sys_ila";
+AREA_GROUP "pblock_cs_sys_ila" RANGE=SLICE_X52Y90:SLICE_X63Y99;
+AREA_GROUP "pblock_cs_sys_ila" RANGE=RAMB18_X3Y36:RAMB18_X3Y39;
+AREA_GROUP "pblock_cs_sys_ila" RANGE=RAMB36_X3Y18:RAMB36_X3Y19;
+
+INST "cs/sys_vio" AREA_GROUP = "pblock_cs_sys_vio";
+AREA_GROUP "pblock_cs_sys_vio" RANGE=SLICE_X52Y80:SLICE_X55Y82;
+
+INST "sys_ram_out" AREA_GROUP = "pblock_sys_ram_out";
+AREA_GROUP "pblock_sys_ram_out" RANGE=RAMB18_X3Y34:RAMB18_X3Y35;
+AREA_GROUP "pblock_sys_ram_out" RANGE=RAMB36_X3Y17:RAMB36_X3Y17;
+
+INST "async_fifo" AREA_GROUP = "pblock_fifo";
+AREA_GROUP "pblock_fifo" RANGE=SLICE_X40Y90:SLICE_X43Y99;
+AREA_GROUP "pblock_fifo" RANGE=RAMB18_X2Y36:RAMB18_X2Y39;
+AREA_GROUP "pblock_fifo" RANGE=RAMB36_X2Y18:RAMB36_X2Y19;
+
+INST "sys_mmcm" AREA_GROUP = "pblock_sys_mmcm";
+AREA_GROUP "pblock_sys_mmcm" RANGE=SLICE_X56Y80:SLICE_X63Y89;
+
+
+INST "sys_mmcm/mmcm_adv_inst" LOC = MMCM_ADV_X0Y4;
