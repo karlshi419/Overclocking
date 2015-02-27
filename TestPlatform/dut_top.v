@@ -20,9 +20,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 module dut_top(clk, nrst, enable, fifo_full, fifo_wr_en, dut_dout);
 parameter data_width = 16;
-parameter rom_depth_bits = 9;
-//parameter rom_depth = 512;
-localparam rom_depth = 2^rom_depth_bits;
+//parameter rom_depth_bits = 9;
+parameter rom_depth_bits = 12;
+localparam rom_depth = 2^rom_depth_bits;	//4096 words
 
 parameter data_width_out = 40;
 
@@ -51,7 +51,7 @@ parameter data_width_out = 40;
 
 	
 	initial begin
-		$readmemb("./matlab/rom_in.txt", rom_in_1, 0, rom_depth-1);
+		$readmemb("./matlab/tiffany_in.txt", rom_in_1, 0, rom_depth-1);
 		
 	end
 	
@@ -118,7 +118,7 @@ parameter data_width_out = 40;
 	assign dut_en = en_r2 & (!fifo_full_r);
 	
 	//adder #(data_width) dut(.clk(clk), .nrst(nrst), .enable(dut_en), .din_x(rom_dout_1), .din_y(rom_dout_2), .data_out(temp_dut_dout));
-	online_fir dut(.clk(clk), .nrst(nrst), .enable(dut_en), .din_x(rom_dout_1), .data_out(temp_dut_dout));
+	online_log_taylor dut(.clk(clk), .nrst(nrst), .enable(dut_en), .din_x(rom_dout_1), .data_out(temp_dut_dout));
 
 
 endmodule

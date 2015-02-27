@@ -20,35 +20,41 @@
 //////////////////////////////////////////////////////////////////////////////////
 //module platform_top(sys_clk, sys_rst, read_enable, write_enable, led);
 module platform_top(sys_clk_p, sys_clk_n, sys_rst, led);
-parameter AddrWL = 9;
-parameter data_width_out = 40;
+
+parameter AddrWL = 11;
+//parameter data_width_out = 40;	//fir
+//parameter data_width_out = 24;	//sobel
+//parameter data_width_out = 16;	//iir
+//parameter data_width_out = 26;	//dct
+//parameter data_width_out = 44;	//taylor_log_full
+parameter data_width_out = 18;	//taylor_log_full
+
 	input sys_clk_p,sys_clk_n;
 	
 	input sys_rst;
 
 	//test
-	//input sys_clk;
-	//input write_enable;
-	//input read_enable;
-	
+	/*input sys_clk;
+	input write_enable;
+	input read_enable;
+	*/
 	output [7:0] led;
 	
 	wire dut_en;
-	//wire [7:0] dut_dout;
 	wire [data_width_out-1:0] dut_dout;
 	
 	wire write_enable, read_enable;
 	
 	//---- Clock signals ----//
 	wire clk;		//200MHz
-	//wire clk_200;
+
 	
 	wire clk_ip_oddr_in;
 	wire clk_ip;
 	
 	//-- MMCM Signals --//
 	wire mmcm_lock;
-	wire [1:0] mmcm_STATE;
+	wire [4:0] mmcm_STATE;
 	
 	wire nrst;
 	wire nrst_bufg;
@@ -93,7 +99,7 @@ parameter data_width_out = 40;
 							
 	//---- Control Block ----//
 	(* KEEP_HIERARCHY="true" *)
-	control control_logic(.clk(clk), .nrst(nrst), .write_enable(write_enable), .read_enable(read_enable), 
+	control #(AddrWL) control_logic(.clk(clk), .nrst(nrst), .write_enable(write_enable), .read_enable(read_enable), 
 								 .dut_en(dut_en), .mmcm_lock(mmcm_lock),
 								 .fifo_empty(fifo_empty), .fifo_read_en(fifo_rd_en), .fifo_clear(fifo_clear),
 								 .bram_write_en(bram_write_en), .bram_read_en(bram_read_en),  .bram_read_finish(bram_read_finish),
@@ -101,7 +107,8 @@ parameter data_width_out = 40;
 	
 	//---- Design Under Test ----//
 	(* KEEP_HIERARCHY="true" *)
-	dut_top design_top(.clk(clk_ip), .nrst(nrst), 
+	dut_top #(.rom_depth_bits(AddrWL))
+			  design_top(.clk(clk_ip), .nrst(nrst), 
 							 .enable(dut_en), 			//input dut enable
 							 .fifo_full(fifo_full), 	//input fifo full
 							 .fifo_wr_en(fifo_wr_en), 	//output, sync to clk_ip, fifo_wr_en
@@ -124,17 +131,17 @@ parameter data_width_out = 40;
 	ram_out sys_ram_out (
 		.clka(clk), // input clka
 		.wea(bram_write_en), // input [0 : 0] wea
-		.addra(bram_address_write), // input [8 : 0] addra
+		.addra(bram_address_write), // input [AddrWL-1 : 0] addra
 		.dina(fifo_dout), // input [data_width_out-1 : 0] dina
 		.clkb(clk), // input clkb
 		.rstb(!bram_read_en), // input rstb
 		.enb(bram_read_en), // input enb
-		.addrb(bram_address_read), // input [8 : 0] addrb
+		.addrb(bram_address_read), // input [AddrWL-1 : 0] addrb
 		.doutb(bram_dout) // output [7 : 0] doutb
 	);
 	
 	//---- ChipScope Modules ----//	
-	localparam ila_data_width = 45;
+	localparam ila_data_width = data_width_out+6;
 	
 	wire [1:0] 	vio_out;
 	wire [ila_data_width-1:0] ila_data;
@@ -143,11 +150,9 @@ parameter data_width_out = 40;
 	chipscope #(ila_data_width)cs(.clk(clk), .ila_data(ila_data), .trig0(trig0), .vio_out(vio_out));
 	
 	//-- ILA data signal connections --//
-	assign ila_data[39:0]		= bram_dout;
-	assign ila_data[41:40]		= mmcm_STATE;
-	assign ila_data[42]			= dut_en;
-	assign ila_data[43]			= bram_write_en;
-	assign ila_data[44]			= bram_read_en;
+	assign ila_data[ila_data_width-7:0]							= bram_dout;
+	assign ila_data[ila_data_width-2:ila_data_width-6]		= mmcm_STATE;
+	assign ila_data[ila_data_width-1]							= bram_read_en;
 
 	
 	
@@ -159,8 +164,8 @@ parameter data_width_out = 40;
 	assign write_enable	= vio_out[1];
 	assign read_enable	= vio_out[0];
 	
-	assign led[5:0] = bram_dout[7:2];
-	assign led[7:6] = mmcm_STATE;
+	assign led[2:0] = bram_dout[7:4];
+	assign led[7:3] = mmcm_STATE;
 
 
 endmodule
